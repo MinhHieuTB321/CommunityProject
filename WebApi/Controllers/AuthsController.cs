@@ -14,7 +14,7 @@ public class AuthsController : BaseController
     }
 
     /// <summary>
-    /// Api login via Google
+    /// Api login via Google Firebase
     /// </summary>
     /// <param name="token"></param>
     /// <returns></returns>
@@ -24,9 +24,8 @@ public class AuthsController : BaseController
         var result = await _userService.AuthenticateGoogleAsync(token);
         return Ok(result);
     }
-
     /// <summary>
-    /// Api login by email & password
+    /// Api use to login by email and password
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>

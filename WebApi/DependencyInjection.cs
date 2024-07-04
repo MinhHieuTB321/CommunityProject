@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Application;
 using Application.GlobalExceptionHandling;
+using Application.Services;
 using Application.Services.Interfaces;
 using Infrastructures.Mapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -36,6 +37,7 @@ public static class DependencyInjection
             x.LowercaseUrls = true;
         });
         builder.Services.AddScoped<IClaimsService, ClaimsService>();
+        builder.Services.AddScoped<IActivitiesService, ActivityService>();
         #region  DI_Appsettings
         var configuration = builder.Configuration.Get<AppSettings>() ?? throw new Exception("Null configuration");
 

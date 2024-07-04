@@ -12,7 +12,6 @@ public class CreateActivityModel
 public class UpdateActivityModel
 {
     public Guid Id { get; set; }
-    public Guid CommunityId { get; set; }
     [AllowNull]
     public IFormFile? ImageFile { get; set; } = default!;
     public string Description { get; set; } = default!;

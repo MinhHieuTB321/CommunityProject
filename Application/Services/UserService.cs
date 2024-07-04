@@ -67,7 +67,8 @@ public class UserService : IUserService
     public async Task<bool> DeleteAsync(Guid id)
     {
         var user = await _repository.GetByIdAsync<User>(_tableName, id);
-        if (user == null) throw new NotFoundException("User is not exist!");
+        if (user == null) 
+            throw new NotFoundException("User is not exist!");
         return await _repository.DeleteAsync<User>(_tableName, id);
     }
 
@@ -82,14 +83,16 @@ public class UserService : IUserService
     public async Task<ViewUserModel> GetByIdAsync(Guid id)
     {
         var user = await _repository.GetByIdAsync<User>(_tableName, id);
-        if (user == null) throw new NotFoundException("User is not exist!");
+        if (user == null) 
+            throw new NotFoundException("User is not exist!");
         return _mapper.Map<ViewUserModel>(user);
     }
 
     public async Task UpdateAsync(UpdateUserModel model)
     {
         var user = await _repository.GetByIdAsync<User>(_tableName, model.Id);
-        if (user == null) throw new NotFoundException("User is not exist!");
+        if (user == null)
+            throw new NotFoundException("User is not exist!");
         if (!model.Password.Equals(model.ConfirmPassword))
             throw new BadRequestException("Password is not match");
         var record = _mapper.Map(model, user);

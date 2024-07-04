@@ -25,10 +25,14 @@ public class CommunityService : ICommunityService
     }
     public async Task CreateAsync(CreateCommunityModel model)
     {
+        var user = await _repository.GetByIdAsync<User>(_tableUser,_claims.GetCurrentUser);
+        if (user == null)
+            throw new BadRequestException("User is not found!");
         var record = _mapper.Map<Community>(model);
         record.StartDate = DateTime.Now;
         record.EndDate = DateTime.Now.AddDays(model.Period);
         record.Members!.Add(_claims.GetCurrentUser);
+        record.NumOfMember = 1;
         await _repository.InsertAsync<Community>(_tableName, record);
     }
 
@@ -53,31 +57,34 @@ public class CommunityService : ICommunityService
                 result[i].IsJoined = true;
             }
         }
-        return result;
+        return result.OrderByDescending(x=>x.CreationDate).ToList();
     }
     public async Task<ViewCommunityModel> GetByIdAsync(Guid id)
     {
-        var user = await _repository.GetByIdAsync<User>(_tableName, id);
-        if (user == null) throw new NotFoundException("User is not exist!");
-        return _mapper.Map<ViewCommunityModel>(user);
+        var community = await _repository.GetByIdAsync<Community>(_tableName, id);
+        if (community == null) throw new NotFoundException("Community is not exist!");
+        return _mapper.Map<ViewCommunityModel>(community);
     }
 
     public async Task JoinAsync(Guid communityId)
     {
         var community = await _repository.GetByIdAsync<Community>(_tableName, communityId);
-        if (community.CreatedBy != _claims.GetCurrentUser)
-            throw new BadRequestException("You are not allowed to update this community");
+        if (community == null) 
+            throw new NotFoundException("Community is not exist!");
         if (community.NumOfMember > 10)
             throw new BadRequestException("Community is full");
         if (community.Members!.Contains(_claims.GetCurrentUser))
             throw new BadRequestException("You are already joined this community");
         community.Members!.Add(_claims.GetCurrentUser);
+        community.NumOfMember++;
         await _repository.UpsertAsync<Community>(_tableName, communityId, community);
     }
 
     public async Task UpdateAsync(UpdateCommunityModel model)
     {
         var community = await _repository.GetByIdAsync<Community>(_tableName, model.Id);
+        if (community == null)
+            throw new NotFoundException("Community is not exist!");
         if (community.CreatedBy != _claims.GetCurrentUser)
             throw new BadRequestException("You are not allowed to update this community");
         var record = _mapper.Map(model, community);

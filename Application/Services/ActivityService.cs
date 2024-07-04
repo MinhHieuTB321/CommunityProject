@@ -15,6 +15,7 @@ public class ActivityService : IActivitiesService
     private readonly IClaimsService _claims;
     private readonly string _tableName;
     private readonly AppSettings _appSettings;
+    private readonly string _communityTable= TableEnums.Communities.ToString();
 
     public ActivityService(IMongoRepository repository,
     IMapper mapper, IClaimsService claims, AppSettings appSettings)
@@ -27,6 +28,9 @@ public class ActivityService : IActivitiesService
     }
     public async Task CreateAsync(CreateActivityModel model)
     {
+        var community = await _repository.GetByIdAsync<Community>(_communityTable, model.CommunityId);
+        if (community == null) 
+            throw new NotFoundException("Community is not exist!");
         var image = await model.ImageFile.UploadFileAsync("Activities", _appSettings);
         var record = _mapper.Map<Activity>(model);
         record.ImageName = image.FileName;
@@ -49,17 +53,26 @@ public class ActivityService : IActivitiesService
         var activity = await _repository.GetByIdAsync<Activity>(_tableName, id);
         if (activity == null)
             throw new BadRequestException("Activity is not found!");
-        return _mapper.Map<ViewActivityModel>(activity);
+        var result= _mapper.Map<ViewActivityModel>(activity);
+        if(result.PostLikes!.Count>0 && result.PostLikes.Contains(_claims.GetCurrentUser))
+        {
+            result.IsLiked = true;
+        }
+        return  result;
     }
 
     public async Task<List<ViewActivityModel>> GetAllActivities(Guid comId)
     {
+        var community = await _repository.GetByIdAsync<Community>(_communityTable, comId);
+        if (community == null)
+            throw new NotFoundException("Community is not exist!");
         var all = await _repository.GetAllAsync<Activity>(_tableName);
         if (all.Count == 0)
-            throw new BadRequestException("No activities found!");
+            throw new BadRequestException("No activities are found!");
         var activities = all.Where(x => x.CommunityId == comId).ToList();
         if (activities.Count == 0)
             throw new BadRequestException("No activities found!");
+        activities=activities.OrderByDescending(x=>x.CreationDate).ToList();
         var result = _mapper.Map<List<ViewActivityModel>>(activities);
         for (int i = 0; i < result.Count; i++)
         {

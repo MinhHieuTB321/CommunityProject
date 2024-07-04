@@ -20,6 +20,14 @@ namespace WebApi.Controllers
             var result = await _userService.GetAllAsync();
             return Ok(result);
         }
+
+        [Authorize]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var result = await _userService.GetByIdAsync(id);
+            return Ok(result);
+        }
         [HttpPost]
         public async Task<IActionResult> Create(CreateUserModel model)
         {
