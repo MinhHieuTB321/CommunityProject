@@ -25,18 +25,6 @@ public class UserService : IUserService
         _tableName = TableEnums.Users.ToString();
     }
 
-    public async Task<AuthResponseModel> AuthenticateEmailPassAsync(AuthModel model)
-    {
-        var allUsers = await _repository.GetAllAsync<User>(_tableName);
-        var user = allUsers.FirstOrDefault(u => u.Email == model.Email && u.Password == model.Password);
-        if (user is null)
-            throw new NotFoundException("User is not found in Database");
-        return new AuthResponseModel
-        {
-            AccessToken = user.GenerateJsonWebToken(_appSettings),
-            User = _mapper.Map<ViewUserModel>(user)
-        };
-    }
 
     public async Task<AuthResponseModel> AuthenticateGoogleAsync(string token)
     {
@@ -46,28 +34,53 @@ public class UserService : IUserService
         if (userFirebase is null)
             throw new Exception($"Error at: {nameof(UserService)}_ User not exist on firebase authentication");
         var allUsers = await _repository.GetAllAsync<User>(_tableName);
-        var user = allUsers.FirstOrDefault(u => u.Email == userFirebase.Email);
+        var tmp = allUsers.FirstOrDefault(u => u.Email == userFirebase.Email);
+        var user = tmp is not null ?
+        tmp
+        :
+        new User
+        {
+            Name = userFirebase.DisplayName,
+            Email = userFirebase.Email,
+            Password = userFirebase.Email.Split('@')[0],
+        };
         if (user is null)
-            throw new NotFoundException("User is not found in Database");
+            await _repository.InsertAsync<User>(_tableName, user!);
         return new AuthResponseModel
         {
-            AccessToken = user.GenerateJsonWebToken(_appSettings),
+            AccessToken = user!.GenerateJsonWebToken(_appSettings),
             User = _mapper.Map<ViewUserModel>(user)
         };
     }
 
     public async Task CreateAsync(CreateUserModel model)
     {
-        if (!model.Password.Equals(model.ConfirmPassword))
-            throw new BadRequestException("Password is not match");
-        var record = _mapper.Map<User>(model);
-        await _repository.InsertAsync<User>(_tableName, record);
+        try
+        {
+            if (!model.Password.Equals(model.ConfirmPassword))
+                throw new BadRequestException("Password is not match!");
+            var auth = new FirebaseAuthProvider(new FirebaseConfig(apiKey: _appSettings.FirebaseSettings.ApiKeY));
+            var resultFire = await auth.CreateUserWithEmailAndPasswordAsync(email: model.Email, password: model.Password);
+            if (resultFire.User != null)
+            {
+                var record = _mapper.Map<User>(model);
+                await _repository.InsertAsync<User>(_tableName, record);
+            }
+            else
+            {
+                throw new BadRequestException("Create user in firebase failed!");
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Error at: {nameof(UserService)}_ {ex.Message}");
+        }
     }
 
     public async Task<bool> DeleteAsync(Guid id)
     {
         var user = await _repository.GetByIdAsync<User>(_tableName, id);
-        if (user == null) 
+        if (user == null)
             throw new NotFoundException("User is not exist!");
         return await _repository.DeleteAsync<User>(_tableName, id);
     }
@@ -83,7 +96,7 @@ public class UserService : IUserService
     public async Task<ViewUserModel> GetByIdAsync(Guid id)
     {
         var user = await _repository.GetByIdAsync<User>(_tableName, id);
-        if (user == null) 
+        if (user == null)
             throw new NotFoundException("User is not exist!");
         return _mapper.Map<ViewUserModel>(user);
     }
