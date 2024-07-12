@@ -35,21 +35,20 @@ public class UserService : IUserService
             throw new Exception($"Error at: {nameof(UserService)}_ User not exist on firebase authentication");
         var allUsers = await _repository.GetAllAsync<User>(_tableName);
         var tmp = allUsers.FirstOrDefault(u => u.Email == userFirebase.Email);
-        var user = tmp is not null ?
-        tmp
-        :
-        new User
+        if (tmp is null)
         {
-            Name = userFirebase.DisplayName,
-            Email = userFirebase.Email,
-            Password = userFirebase.Email.Split('@')[0],
-        };
-        if (user is null)
-            await _repository.InsertAsync<User>(_tableName, user!);
+            tmp = new User
+            {
+                Name = userFirebase.DisplayName,
+                Email = userFirebase.Email,
+                Password = userFirebase.Email.Split('@')[0],
+            };
+            await _repository.InsertAsync<User>(_tableName, tmp);
+        }
         return new AuthResponseModel
         {
-            AccessToken = user!.GenerateJsonWebToken(_appSettings),
-            User = _mapper.Map<ViewUserModel>(user)
+            AccessToken = tmp!.GenerateJsonWebToken(_appSettings),
+            User = _mapper.Map<ViewUserModel>(tmp)
         };
     }
 
@@ -104,6 +103,7 @@ public class UserService : IUserService
     public async Task UpdateAsync(UpdateUserModel model)
     {
         var user = await _repository.GetByIdAsync<User>(_tableName, model.Id);
+        var auth = new FirebaseAuthProvider(new FirebaseConfig(apiKey: _appSettings.FirebaseSettings.ApiKeY));
         if (user == null)
             throw new NotFoundException("User is not exist!");
         if (!model.Password.Equals(model.ConfirmPassword))
