@@ -9,6 +9,7 @@ using Domain.Entities.Enums;
 using Firebase.Auth;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using Newtonsoft.Json;
 using User = Domain.Entities.User;
 
 namespace Application.Services;
@@ -105,10 +106,9 @@ public class UserService : IUserService
 
     private async Task DeleteUserFirebase(string email)
     {
-        var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "communityproject.json").Replace(@"bin\Debug\net8.0\", "");
         FirebaseApp.Create(new AppOptions()
         {
-            Credential = GoogleCredential.FromFile(path)
+            Credential = GoogleCredential.FromJson(_appSettings.FireBaseConfig)
         });
         var user = await FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance.GetUserByEmailAsync(email);
         await FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance.DeleteUserAsync(user.Uid);
