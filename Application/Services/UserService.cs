@@ -116,6 +116,8 @@ public class UserService : IUserService
         var user = await _repository.GetByIdAsync<User>(_tableName, model.Id);
         if (user == null)
             throw new NotFoundException("User is not exist!");
+        if (!model.Email.Equals(model.Email))
+            throw new BadRequestException("Email cannot be change!");
         if (!model.Password.Equals(model.ConfirmPassword))
             throw new BadRequestException("Password is not match");
         if (!model.Password.Equals(user.Password))
