@@ -106,10 +106,6 @@ public class UserService : IUserService
 
     private async Task DeleteUserFirebase(string email)
     {
-        FirebaseApp.Create(new AppOptions()
-        {
-            Credential = GoogleCredential.FromJson(_appSettings.FireBaseConfig)
-        });
         var user = await FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance.GetUserByEmailAsync(email);
         await FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance.DeleteUserAsync(user.Uid);
 

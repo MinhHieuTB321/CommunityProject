@@ -6,6 +6,8 @@ using Application;
 using Application.GlobalExceptionHandling;
 using Application.Services;
 using Application.Services.Interfaces;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Infrastructures.Mapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -114,6 +116,12 @@ public static class DependencyInjection
         builder.Services.AddSingleton<GlobalErrorHandlingMiddleware>();
         builder.Services.AddSingleton<PerformanceMiddleware>();
         builder.Services.AddSingleton<Stopwatch>();
+
+        var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "communityproject-7fbb6-firebase-adminsdk-9zn6e-28f7f5ff69.json").Replace(@"bin\Debug\net8.0\", "");
+        FirebaseApp.Create(new AppOptions()
+        {
+            Credential = GoogleCredential.FromFile(path)
+        });
         return builder;
     }
 }
