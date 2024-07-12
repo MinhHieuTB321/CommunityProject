@@ -2,7 +2,8 @@ namespace Application;
 
 public class AppSettings
 {
-    public string DatabaseName { get; set;} = default!;
+    public string DatabaseName { get; set; } = default!;
+    public string FireBaseConfig { get; set; } = default!;
     public ConnectionStrings ConnectionStrings { get; set; } = default!;
     public FirebaseSettings FirebaseSettings { get; set; } = default!;
     public JWTOptions JWTOptions { get; set; } = default!;

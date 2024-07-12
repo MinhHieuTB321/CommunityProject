@@ -7,6 +7,8 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.Enums;
 using Firebase.Auth;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using User = Domain.Entities.User;
 
 namespace Application.Services;
@@ -81,6 +83,7 @@ public class UserService : IUserService
         var user = await _repository.GetByIdAsync<User>(_tableName, id);
         if (user == null)
             throw new NotFoundException("User is not exist!");
+        await DeleteUserFirebase(user.Email);
         return await _repository.DeleteAsync<User>(_tableName, id);
     }
 
@@ -100,14 +103,33 @@ public class UserService : IUserService
         return _mapper.Map<ViewUserModel>(user);
     }
 
+    private async Task DeleteUserFirebase(string email)
+    {
+        var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "communityproject-7fbb6-firebase-adminsdk-9zn6e-fc1d7b0987.json").Replace(@"bin\Debug\net8.0\", "");
+        FirebaseApp.Create(new AppOptions()
+        {
+            Credential = GoogleCredential.FromFile(path)
+        });
+        var user = await FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance.GetUserByEmailAsync(email);
+        await FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance.DeleteUserAsync(user.Uid);
+
+    }
+
     public async Task UpdateAsync(UpdateUserModel model)
     {
         var user = await _repository.GetByIdAsync<User>(_tableName, model.Id);
-        var auth = new FirebaseAuthProvider(new FirebaseConfig(apiKey: _appSettings.FirebaseSettings.ApiKeY));
         if (user == null)
             throw new NotFoundException("User is not exist!");
         if (!model.Password.Equals(model.ConfirmPassword))
             throw new BadRequestException("Password is not match");
+        if (!model.Password.Equals(user.Password))
+        {
+            await DeleteUserFirebase(user.Email);
+            var auth = new FirebaseAuthProvider(new FirebaseConfig(apiKey: _appSettings.FirebaseSettings.ApiKeY));
+            var resultFire = await auth.CreateUserWithEmailAndPasswordAsync(email: model.Email, password: model.Password);
+            if (resultFire.User == null)
+                throw new BadRequestException("Error at Firebase Authentication");
+        }
         var record = _mapper.Map(model, user);
         await _repository.UpsertAsync<User>(_tableName, model.Id, record);
     }
