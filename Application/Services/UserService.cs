@@ -105,7 +105,7 @@ public class UserService : IUserService
 
     private async Task DeleteUserFirebase(string email)
     {
-        var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "communityproject-7fbb6-firebase-adminsdk-9zn6e-fc1d7b0987.json").Replace(@"bin\Debug\net8.0\", "");
+        var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "communityproject.json").Replace(@"bin\Debug\net8.0\", "");
         FirebaseApp.Create(new AppOptions()
         {
             Credential = GoogleCredential.FromFile(path)
