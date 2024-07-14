@@ -24,4 +24,16 @@ public class AuthsController : BaseController
         var result = await _userService.AuthenticateGoogleAsync(token);
         return Ok(result);
     }
+
+    /// <summary>
+    /// Api login by email & password
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [HttpPost]
+    public async Task<IActionResult> LoginByEmailPass([FromBody] AuthModel model)
+    {
+        var result = await _userService.AuthenticateEmailPassAsync(model);
+        return Ok(result);
+    }
 }

@@ -6,6 +6,7 @@ namespace Application.Services.Interfaces;
 
 public interface IUserService
 {
+    Task<AuthResponseModel> AuthenticateEmailPassAsync(AuthModel model);
     Task<AuthResponseModel> AuthenticateGoogleAsync(string token);
     Task<List<ViewUserModel>> GetAllAsync();
     Task<ViewUserModel> GetByIdAsync(Guid id);

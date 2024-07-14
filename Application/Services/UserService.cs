@@ -28,7 +28,18 @@ public class UserService : IUserService
         _tableName = TableEnums.Users.ToString();
     }
 
-
+    public async Task<AuthResponseModel> AuthenticateEmailPassAsync(AuthModel model)
+    {
+        var allUsers = await _repository.GetAllAsync<User>(_tableName);
+        var user = allUsers.FirstOrDefault(u => u.Email == model.Email && u.Password == model.Password);
+        if (user is null)
+            throw new NotFoundException("User is not found in Database");
+        return new AuthResponseModel
+        {
+            AccessToken = user.GenerateJsonWebToken(_appSettings),
+            User = _mapper.Map<ViewUserModel>(user)
+        };
+    }
     public async Task<AuthResponseModel> AuthenticateGoogleAsync(string token)
     {
         var auth = new FirebaseAuthProvider(new FirebaseConfig(apiKey: _appSettings.FirebaseSettings.ApiKeY));
