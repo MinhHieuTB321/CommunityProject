@@ -33,7 +33,7 @@ namespace WebApi.Controllers
     }
     public class TestsController : BaseController
     {
-        [HttpGet]
+        [HttpPost]
         public IActionResult Test([FromBody] ResponseData data)
         {
             return Ok("Oke: \n" + data);
