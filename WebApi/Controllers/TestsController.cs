@@ -28,7 +28,7 @@ namespace WebApi.Controllers
     }
     public class TestsController : BaseController
     {
-        [HttpPost]
+        [HttpPost("/api/webhook-event-handler ")]
         public IActionResult Test([FromBody] Response data)
         {
             return Ok("Oke: \n" + data.Error);
