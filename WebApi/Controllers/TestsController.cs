@@ -27,6 +27,7 @@ namespace WebApi.Controllers
         [HttpPost("/api/webhook-event-handler")]
         public IActionResult Test([FromBody] ResponseData response)
         {
+            Console.WriteLine($"{response.Code}, {response.Desc}, {response.Success}, {response.Data.OrderCode}, {response.Signature}");
             return Ok($"{response.Code}, {response.Desc}, {response.Success}, {response.Data.OrderCode}, {response.Signature}");
         }
     }
