@@ -3,35 +3,31 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers
 {
-    public class Transaction
+    public class ResponseData
     {
-        public int Id { get; set; }
-        public DateTime When { get; set; }
-        public decimal Amount { get; set; }
-        public string Description { get; set; }
-        public decimal CusumBalance { get; set; }
-        public string Tid { get; set; }
-        public string SubAccId { get; set; }
-        public string BankSubAccId { get; set; }
-        public string VirtualAccount { get; set; }
-        public string VirtualAccountName { get; set; }
-        public string CorresponsiveName { get; set; }
-        public string CorresponsiveAccount { get; set; }
-        public string CorresponsiveBankId { get; set; }
-        public string CorresponsiveBankName { get; set; }
+        public string Code { get; set; }
+        public string Desc { get; set; }
+        public bool Success { get; set; }
+        public Data Data { get; set; }
+        public string Signature { get; set; }
     }
 
-    public class Response
+    public class Data
     {
-        public int Error { get; set; }
-        public Transaction[] Data { get; set; }
+        public int OrderCode { get; set; }
+        public int Amount { get; set; }
+        public string Description { get; set; }
+        public string CounterAccountName { get; set; }
+        public string CounterAccountNumber { get; set; }
+        public string VirtualAccountName { get; set; }
+        public string VirtualAccountNumber { get; set; }
     }
     public class TestsController : BaseController
     {
         [HttpPost("/api/webhook-event-handler")]
-        public IActionResult Test()
+        public IActionResult Test([FromBody] ResponseData response)
         {
-            return Ok("Oke");
+            return Ok($"{response.Code}, {response.Desc}, {response.Success}, {response.Data.OrderCode}, {response.Signature}");
         }
     }
 
