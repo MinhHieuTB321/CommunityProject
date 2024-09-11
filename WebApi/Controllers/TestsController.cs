@@ -1,8 +1,14 @@
 
+using Application;
+using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers
 {
+    public class WebHook : BaseEntity
+    {
+        public ResponseData? ResponseData { get; set; }
+    }
     public class ResponseData
     {
         public string Code { get; set; }
@@ -24,10 +30,21 @@ namespace WebApi.Controllers
     }
     public class TestsController : BaseController
     {
-        [HttpPost("/api/webhook-event-handler")]
-        public IActionResult Test([FromBody] ResponseData response)
+        private readonly ILogger<TestsController> _logger;
+
+        private readonly IMongoRepository _repository;
+
+        public TestsController(ILogger<TestsController> logger, IMongoRepository repository)
         {
-            Console.WriteLine($"{response.Code}, {response.Desc}, {response.Success}, {response.Data.OrderCode}, {response.Signature}");
+            _logger = logger;
+            _repository = repository;
+        }
+        [HttpPost("/api/webhook-event-handler")]
+        public async Task<IActionResult> Test([FromBody] ResponseData response)
+        {
+            var data = new WebHook { ResponseData = response };
+            await _repository.InsertAsync<WebHook>("webHook", data);
+            _logger.LogInformation($"{response.Code}, {response.Desc}, {response.Success}, {response.Data.OrderCode}, {response.Signature}");
             return Ok($"{response.Code}, {response.Desc}, {response.Success}, {response.Data.OrderCode}, {response.Signature}");
         }
     }
