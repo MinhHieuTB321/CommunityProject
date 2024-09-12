@@ -2,6 +2,7 @@
 using Application;
 using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace WebApi.Controllers
 {
@@ -53,9 +54,10 @@ namespace WebApi.Controllers
             _repository = repository;
         }
         [HttpPost("/api/webhook-event-handler")]
-        public async Task<IActionResult> Test([FromBody] RequestData request)
+        public async Task<IActionResult> Test([FromBody] string request)
         {
-            var data = new WebHook { RequestData = request };
+            var parse = JsonConvert.DeserializeObject<RequestData>(request);
+            var data = new WebHook { RequestData = parse };
             await _repository.InsertAsync<WebHook>("webHook", data);
 
             // Return the response
