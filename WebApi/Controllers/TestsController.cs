@@ -55,8 +55,7 @@ namespace WebApi.Controllers
         {
             var data = new WebHook { ResponseData = response };
             await _repository.InsertAsync<WebHook>("webHook", data);
-            _logger.LogInformation($"{response.Code}, {response.Desc}, {response.Success}, {response.Data.OrderCode}, {response.Signature}");
-            return Ok($"{response.Code}, {response.Desc}, {response.Success}, {response.Data.OrderCode}, {response.Signature}");
+            return Ok(new { Success = true });
         }
     }
 
