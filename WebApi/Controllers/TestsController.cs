@@ -14,7 +14,7 @@ namespace WebApi.Controllers
         public string Code { get; set; }
         public string Desc { get; set; }
         public bool Success { get; set; }
-        public Data Data { get; set; }
+        public List<Data> Data { get; set; }
         public string Signature { get; set; }
     }
 
