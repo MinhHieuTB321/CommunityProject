@@ -2,6 +2,7 @@
 using Application;
 using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
 using Newtonsoft.Json;
 
 namespace WebApi.Controllers
@@ -46,19 +47,21 @@ namespace WebApi.Controllers
     }
     public class TestsController : BaseController
     {
+        private readonly IMongoDatabase _db;
 
         private readonly IMongoRepository _repository;
 
-        public TestsController(IMongoRepository repository)
+        public TestsController(IMongoRepository repository, AppSettings appSettings)
         {
             _repository = repository;
+            var client = new MongoClient(appSettings.ConnectionStrings.MongoDbConnection);
+            _db = client.GetDatabase(appSettings.DatabaseName);
         }
         [HttpPost("/api/webhook-event-handler")]
-        public async Task<IActionResult> Test([FromBody] string request)
+        public async Task<IActionResult> Test([FromBody] RequestData request)
         {
-            var parse = JsonConvert.DeserializeObject<RequestData>(request);
-            var data = new WebHook { RequestData = parse };
-            await _repository.InsertAsync<WebHook>("webHook", data);
+            var collection = _db.GetCollection<RequestData>("webHook");
+            await collection.InsertOneAsync(request);
 
             // Return the response
             return Ok(new { success = true });
