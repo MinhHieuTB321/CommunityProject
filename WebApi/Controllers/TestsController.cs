@@ -14,7 +14,7 @@ namespace WebApi.Controllers
         public string Code { get; set; }
         public string Desc { get; set; }
         public bool Success { get; set; }
-        public List<Data> Data { get; set; }
+        public Data Data { get; set; }
         public string Signature { get; set; }
     }
 
@@ -57,7 +57,7 @@ namespace WebApi.Controllers
             _repository = repository;
         }
         [HttpPost("/api/webhook-event-handler")]
-        public async Task<IActionResult> Test([FromBody] RequestData request)
+        public async Task<IActionResult> Test([FromBody]  request)
         {
             var data = new WebHook { RequestData = request };
             await _repository.InsertAsync<WebHook>("webHook", data);
