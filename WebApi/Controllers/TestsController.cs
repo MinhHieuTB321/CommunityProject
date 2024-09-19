@@ -22,7 +22,7 @@ namespace WebApi.Controllers
 
     public class Data
     {
-        public int OrderCode { get; set; }
+        public double OrderCode { get; set; }
         public int Amount { get; set; }
         public string? Description { get; set; }
         public string? AccountNumber { get; set; }
